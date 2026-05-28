@@ -148,8 +148,54 @@ export default function AdminDashboard() {
   
   // 🌟 FIX: Updated logic to accurately catch "Pending Approval" events!
   const isPublishedEvent = (event) => !event?.isArchived && normalizeStatus(event?.status) === 'published';
+  const isCompletedEvent = (event) => !event?.isArchived && normalizeStatus(event?.status) === 'completed';
   const isPendingEvent = (event) => !event?.isArchived && normalizeStatus(event?.status).includes('pending');
   const isRejectedEvent = (event) => normalizeStatus(event?.status) === 'rejected';
+
+  const getStatusTheme = (event) => {
+    if (event?.isArchived) {
+      return {
+        label: 'ARCHIVED',
+        chip: 'bg-slate-200 text-slate-700 border border-slate-300',
+        pill: 'bg-slate-900/80',
+        panel: 'border-slate-200 shadow-slate-100',
+      };
+    }
+
+    if (isPublishedEvent(event)) {
+      return {
+        label: 'PUBLISHED',
+        chip: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+        pill: 'bg-emerald-600/90',
+        panel: 'border-emerald-200 shadow-emerald-100',
+      };
+    }
+
+    if (isCompletedEvent(event)) {
+      return {
+        label: 'COMPLETED',
+        chip: 'bg-slate-100 text-slate-700 border border-slate-200',
+        pill: 'bg-slate-700/90',
+        panel: 'border-slate-200 shadow-slate-100',
+      };
+    }
+
+    if (isRejectedEvent(event)) {
+      return {
+        label: 'REJECTED',
+        chip: 'bg-red-100 text-red-700 border border-red-200',
+        pill: 'bg-red-600/90',
+        panel: 'border-red-200 shadow-red-100',
+      };
+    }
+
+    return {
+      label: 'PENDING',
+      chip: 'bg-amber-100 text-amber-700 border border-amber-200',
+      pill: 'bg-amber-500/90',
+      panel: 'border-amber-300 shadow-amber-100',
+    };
+  };
 
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -158,6 +204,7 @@ export default function AdminDashboard() {
     const matchesStatus = statusFilter === 'All' || 
                           (statusFilter === 'Active' && isPublishedEvent(event)) || 
                           (statusFilter === 'Pending' && isPendingEvent(event)) ||
+                          (statusFilter === 'Completed' && isCompletedEvent(event)) ||
                           (statusFilter === 'Rejected' && isRejectedEvent(event)) ||
                           (statusFilter === 'Archived' && event.isArchived);
     return matchesSearch && matchesCategory && matchesStatus;
@@ -249,6 +296,7 @@ export default function AdminDashboard() {
             <option value="All">All Statuses</option>
             <option value="Pending">⏳ Pending Review</option>
             <option value="Active">✅ Published</option>
+            <option value="Completed">🟣 Completed</option>
             <option value="Rejected">❌ Rejected</option>
             <option value="Archived">📦 Archived</option>
           </select>
@@ -263,7 +311,7 @@ export default function AdminDashboard() {
             const cannotArchive = hasTicketsSold && !event.isArchived;
 
             return (
-            <div key={event.id} className={`bg-white rounded-3xl shadow-sm border overflow-hidden flex flex-col transition-all duration-300 group ${event.isArchived || isRejectedEvent(event) ? 'opacity-70 grayscale-[50%] hover:grayscale-0 border-gray-200' : isPendingEvent(event) ? 'border-amber-300 shadow-amber-100 hover:shadow-xl hover:-translate-y-1' : 'border-gray-100 hover:shadow-xl hover:-translate-y-1'}`}>
+            <div key={event.id} className={`bg-white rounded-3xl shadow-sm border overflow-hidden flex flex-col transition-all duration-300 group ${event.isArchived ? 'opacity-70 grayscale-[50%] hover:grayscale-0 border-gray-200' : isPendingEvent(event) ? 'border-amber-300 shadow-amber-100 hover:shadow-xl hover:-translate-y-1' : isRejectedEvent(event) ? 'border-red-200 shadow-red-100 hover:shadow-xl hover:-translate-y-1' : isCompletedEvent(event) ? 'border-slate-200 shadow-slate-100 hover:shadow-xl hover:-translate-y-1' : 'border-emerald-200 shadow-emerald-100 hover:shadow-xl hover:-translate-y-1'}`}>
               
               <div className="h-52 bg-gray-100 relative overflow-hidden">
                 {event.imageUrl ? (
@@ -273,13 +321,8 @@ export default function AdminDashboard() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60"></div>
 
                 <div className="absolute top-4 left-4">
-                  <span className={`px-3 py-1.5 text-xs font-extrabold rounded-full shadow-sm backdrop-blur-md text-white tracking-wide ${
-                    event.isArchived ? 'bg-gray-900/80' : 
-                    isPendingEvent(event) ? 'bg-amber-500/90' :
-                    isRejectedEvent(event) ? 'bg-red-600/90' :
-                    'bg-emerald-500/90'
-                  }`}>
-                    {event.isArchived ? 'ARCHIVED' : String(event.status || 'Pending').toUpperCase()}
+                  <span className={`px-3 py-1.5 text-xs font-extrabold rounded-full shadow-sm backdrop-blur-md text-white tracking-wide ${getStatusTheme(event).pill}`}>
+                    {getStatusTheme(event).label}
                   </span>
                 </div>
               </div>
@@ -419,13 +462,8 @@ export default function AdminDashboard() {
                         </div>
                       </td>
                       <td className="p-5">
-                        <span className={`px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider rounded-full ${
-                          event.isArchived ? 'bg-gray-200 text-gray-600' : 
-                          isPendingEvent(event) ? 'bg-amber-100 text-amber-700 border border-amber-200 shadow-sm' :
-                          isRejectedEvent(event) ? 'bg-red-100 text-red-700' :
-                          'bg-emerald-100 text-emerald-700 shadow-sm'
-                        }`}>
-                          {event.isArchived ? 'Archived' : (event.status || 'Pending')}
+                          <span className={`px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider rounded-full ${getStatusTheme(event).chip}`}>
+                          {getStatusTheme(event).label}
                         </span>
                       </td>
                       <td className="p-5 text-right pr-8">
