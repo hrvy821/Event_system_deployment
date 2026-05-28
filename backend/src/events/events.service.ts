@@ -29,7 +29,18 @@ export class EventsService implements OnModuleInit {
           $lookup: {
             from: 'attendees',
             let: { eventId: { $toString: '$id' } },
-            pipeline: [{ $match: { $expr: { $eq: ['$eventId', '$$eventId'] } } }],
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$eventId', '$$eventId'] },
+                      { $ne: ['$status', 'Cancelled'] },
+                    ],
+                  },
+                },
+              },
+            ],
             as: 'attendees',
           },
         },
@@ -48,7 +59,18 @@ export class EventsService implements OnModuleInit {
           $lookup: {
             from: 'attendees',
             let: { eventId: { $toString: '$id' } },
-            pipeline: [{ $match: { $expr: { $eq: ['$eventId', '$$eventId'] } } }],
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$eventId', '$$eventId'] },
+                      { $ne: ['$status', 'Cancelled'] },
+                    ],
+                  },
+                },
+              },
+            ],
             as: 'attendees',
           },
         },

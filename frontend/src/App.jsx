@@ -55,8 +55,8 @@ function AppContent() {
           <Route index element={<OrganizerDashboard />} />
           <Route path="create" element={<CreateEvent />} />
           <Route path="attendees" element={<Attendees />} />
+          <Route path="scan" element={<ScannerPage />} />
         </Route>
-        <Route path="/organizer/scan" element={<ScannerPage />} />
 
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />

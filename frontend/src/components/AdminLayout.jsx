@@ -9,7 +9,7 @@ export default function AdminLayout() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   
   // 🌟 FIX: Set to FALSE so the sidebar is hidden and dashboard is MAX layout by default!
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); 
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -21,11 +21,18 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen w-full bg-gray-50/50 font-sans overflow-hidden">
+      {isSidebarOpen && (
+        <button
+          className="fixed inset-0 bg-slate-950/40 z-10 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+          aria-label="Close sidebar"
+        />
+      )}
       
       {/* 🌟 BULLETPROOF SIDEBAR: Completely collapses to 0px width when closed */}
       <aside 
-        className={`bg-slate-950 text-slate-300 flex flex-col z-20 shadow-2xl transition-all duration-300 ease-in-out shrink-0 overflow-hidden ${
-          isSidebarOpen ? 'w-72 border-r border-slate-800 opacity-100' : 'w-0 border-r-0 opacity-0'
+        className={`bg-slate-950 text-slate-300 flex flex-col z-20 shadow-2xl transition-all duration-300 ease-in-out shrink-0 overflow-hidden fixed lg:static inset-y-0 left-0 ${
+          isSidebarOpen ? 'w-72 border-r border-slate-800 opacity-100 translate-x-0' : 'w-0 border-r-0 opacity-0 -translate-x-full lg:translate-x-0'
         }`}
       >
         <div className="w-72 flex flex-col h-full">
@@ -96,7 +103,7 @@ export default function AdminLayout() {
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-300 w-full">
         
         {/* TOP HEADER */}
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-200/80 px-8 flex items-center justify-between z-10 sticky top-0 shrink-0">
+        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-200/80 px-4 sm:px-8 flex items-center justify-between z-10 sticky top-0 shrink-0">
           
           <div className="flex items-center gap-4">
             <button 
@@ -116,14 +123,14 @@ export default function AdminLayout() {
             )}
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 sm:gap-6">
             
             <NotificationBell />
             
-            <div className="h-8 w-px bg-gray-200"></div>
+            <div className="h-8 w-px bg-gray-200 hidden sm:block"></div>
 
-            <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 py-1.5 pl-4 pr-1.5 rounded-full shadow-sm">
-              <div className="flex flex-col text-right">
+            <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 py-1.5 pl-3 sm:pl-4 pr-1.5 rounded-full shadow-sm">
+              <div className="hidden sm:flex flex-col text-right">
                 <span className="text-sm font-extrabold text-gray-900 leading-none">{user.name || 'System Admin'}</span>
                 <span className="text-[10px] font-bold text-blue-600 uppercase mt-0.5 tracking-wider">Admin</span>
               </div>
@@ -136,7 +143,7 @@ export default function AdminLayout() {
         </header>
 
         {/* PAGE CONTENT */}
-        <div className="flex-1 overflow-y-auto p-8 scroll-smooth w-full">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 scroll-smooth w-full">
           <Outlet />
         </div>
       </main>

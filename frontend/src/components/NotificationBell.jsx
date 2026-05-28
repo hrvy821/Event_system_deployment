@@ -102,7 +102,7 @@ export default function NotificationBell() {
 
             {/* The Dropdown Panel */}
             {isOpen && (
-                <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="fixed left-3 right-3 top-20 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-3 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="bg-slate-900 px-4 py-3 flex justify-between items-center">
                         <h3 className="font-bold text-white flex items-center gap-2">
                             Notifications {unreadCount > 0 && <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">{unreadCount} new</span>}

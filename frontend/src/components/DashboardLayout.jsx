@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, Users, ScanLine, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Users, ScanLine, LogOut, User, Menu, X } from 'lucide-react';
 import NotificationBell from './NotificationBell'; 
 import HarmonyLogo from './HarmonyLogo'; // 🌟 Added Logo Import
 
@@ -9,6 +9,7 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -46,12 +47,12 @@ export default function DashboardLayout() {
       `}</style>
 
       {/* 🌟 PREMIUM ORGANIZER NAVBAR WITH GLASSMORPHISM */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/80 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-[1600px] mx-auto px-6">
-          <div className="flex justify-between items-center h-20">
+      <header className="bg-white/90 backdrop-blur-md border-b border-gray-200/80 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
+          <div className="flex justify-between items-center min-h-20 py-3 gap-3">
             
             {/* Logo Section */}
-            <div className="flex items-center gap-12">
+            <div className="flex items-center gap-4 xl:gap-12 min-w-0">
               <Link to="/" className="flex items-center gap-3 group perspective-1000">
                 {/* 🌟 Premium Animated Logo Injection */}
                 <div className="w-11 h-11 relative animate-slow-flip preserve-3d group-hover:scale-110 transition-transform duration-300">
@@ -64,7 +65,7 @@ export default function DashboardLayout() {
                 </div>
                 
                 <div>
-                  <span className="block font-extrabold text-xl text-gray-900 leading-none tracking-tight">Harmony Events</span>
+                  <span className="block font-extrabold text-lg sm:text-xl text-gray-900 leading-none tracking-tight whitespace-nowrap">Harmony Events</span>
                   <span className="block text-[10px] text-gray-500 font-bold tracking-widest mt-0.5">PLATFORM</span>
                 </div>
               </Link>
@@ -92,18 +93,26 @@ export default function DashboardLayout() {
             </div>
 
             {/* Profile & Notifications Section */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
               
               <div className="bg-white border border-gray-200 shadow-sm rounded-full p-1 flex items-center">
                 <NotificationBell />
               </div>
 
-              <div className="h-8 w-px bg-gray-200 mx-2"></div>
+              <button
+                onClick={() => setIsMobileNavOpen((open) => !open)}
+                className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:text-blue-700 hover:bg-blue-50 transition"
+                aria-label={isMobileNavOpen ? 'Close menu' : 'Open menu'}
+              >
+                {isMobileNavOpen ? <X size={18} strokeWidth={2.5} /> : <Menu size={18} strokeWidth={2.5} />}
+              </button>
+
+              <div className="h-8 w-px bg-gray-200 mx-2 hidden sm:block"></div>
 
               {/* Polished Profile Chip */}
               <Link 
                 to="/profile" 
-                className="flex items-center gap-3 bg-white border border-gray-200 hover:border-blue-200 hover:bg-blue-50 transition-all py-1.5 pl-1.5 pr-5 rounded-full shadow-sm cursor-pointer active:scale-95 group"
+                className="hidden sm:flex items-center gap-3 bg-white border border-gray-200 hover:border-blue-200 hover:bg-blue-50 transition-all py-1.5 pl-1.5 pr-5 rounded-full shadow-sm cursor-pointer active:scale-95 group"
                 title="Edit Profile"
               >
                 <div className="w-9 h-9 rounded-full overflow-hidden border border-blue-100 shadow-inner shrink-0 group-hover:ring-2 group-hover:ring-blue-500 transition-all">
@@ -117,7 +126,7 @@ export default function DashboardLayout() {
 
               <button 
                 onClick={() => setShowLogoutModal(true)} 
-                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all border border-transparent hover:border-red-100 ml-1" 
+                className="hidden sm:flex w-10 h-10 items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all border border-transparent hover:border-red-100 ml-1" 
                 title="Logout"
               >
                 <LogOut size={18} strokeWidth={2.5} />
@@ -125,10 +134,46 @@ export default function DashboardLayout() {
 
             </div>
           </div>
+
+          {isMobileNavOpen && (
+            <nav className="lg:hidden pb-4 grid grid-cols-2 gap-2">
+              {navLinks.map((link) => {
+                const isActive = location.pathname === link.path;
+                return (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    onClick={() => setIsMobileNavOpen(false)}
+                    className={`flex items-center gap-2 px-3 py-3 rounded-xl transition-all duration-200 font-bold text-sm ${
+                      isActive
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-gray-600 bg-gray-50 border border-gray-200 hover:bg-blue-50 hover:text-blue-700'
+                    }`}
+                  >
+                    <link.icon size={17} strokeWidth={isActive ? 2.5 : 2} />
+                    <span className="truncate">{link.name}</span>
+                  </Link>
+                );
+              })}
+              <Link
+                to="/profile"
+                onClick={() => setIsMobileNavOpen(false)}
+                className="flex items-center gap-2 px-3 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-gray-600 bg-gray-50 border border-gray-200 hover:bg-blue-50 hover:text-blue-700"
+              >
+                <User size={17} /> Profile
+              </Link>
+              <button
+                onClick={() => { setIsMobileNavOpen(false); setShowLogoutModal(true); }}
+                className="flex items-center gap-2 px-3 py-3 rounded-xl transition-all duration-200 font-bold text-sm text-red-600 bg-red-50 border border-red-100"
+              >
+                <LogOut size={17} /> Logout
+              </button>
+            </nav>
+          )}
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-[1600px] mx-auto p-8">
+      <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8">
         <Outlet />
       </main>
 
