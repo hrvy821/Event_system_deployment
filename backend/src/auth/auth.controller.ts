@@ -32,10 +32,13 @@ export class AuthController {
   @ApiOperation({ summary: 'Check whether Google OAuth is configured' })
   @ApiResponse({ status: 200, description: 'Google OAuth status' })
   googleStatus() {
-    const enabled = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
     return {
-      enabled,
+      enabled: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
       callbackUrl: process.env.GOOGLE_CALLBACK_URL ?? null,
+      providers: {
+        google: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+        facebook: !!(process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET),
+      },
     };
   }
 
@@ -97,6 +100,26 @@ export class AuthController {
     const frontendUrl = configuredFrontendUrl || inferredFrontendUrl;
 
     // 🌟 FIX: Hardcode the frontend URL so it doesn't accidentally redirect to backend port 3000
+    return res.redirect(
+      `${frontendUrl}/login?token=${tokenData.access_token}&user=${encodeURIComponent(JSON.stringify(tokenData.user))}`
+    );
+  }
+
+  @Get('facebook')
+  @UseGuards(AuthGuard('facebook'))
+  @ApiOperation({ summary: 'Initiate Facebook OAuth login' })
+  async facebookAuth(@Req() req) {}
+
+  @Get('facebook/callback')
+  @UseGuards(AuthGuard('facebook'))
+  @ApiOperation({ summary: 'Facebook OAuth callback URL' })
+  async facebookAuthRedirect(@Req() req, @Res() res) {
+    const tokenData = await this.authService.login(req.user);
+
+    const configuredFrontendUrl = (process.env.FRONTEND_URL ?? '').replace(/\/$/, '');
+    const inferredFrontendUrl = `${req.protocol}://${req.get('host')}`;
+    const frontendUrl = configuredFrontendUrl || inferredFrontendUrl;
+
     return res.redirect(
       `${frontendUrl}/login?token=${tokenData.access_token}&user=${encodeURIComponent(JSON.stringify(tokenData.user))}`
     );

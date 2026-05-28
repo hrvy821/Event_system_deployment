@@ -6,6 +6,7 @@ function getDefaultBaseUrl() {
   if (typeof window === 'undefined' || !window.location) return 'http://localhost:3000';
   const port = window.location.port;
   if (port === '5173' || port === '4173') return 'http://localhost:3000';
+  if (window.location.hostname.endsWith('.vercel.app')) return 'https://event-system-deployment.onrender.com';
   return window.location.origin;
 }
 

@@ -5,6 +5,7 @@ import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './google.strategy'; // <-- 1. Imported here
+import { FacebookStrategy } from './facebook.strategy';
 import * as dotenv from 'dotenv';
 
 dotenv.config({ quiet: true });
@@ -22,6 +23,7 @@ dotenv.config({ quiet: true });
   providers: [
     AuthService,
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [GoogleStrategy] : []),
+    ...(process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET ? [FacebookStrategy] : []),
   ],
 })
 export class AuthModule {}
