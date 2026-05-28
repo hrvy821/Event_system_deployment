@@ -30,8 +30,8 @@ export class UsersService {
   private transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.MAIL_USER ?? 'harmony.events9@gmail.com',
-      pass: process.env.MAIL_PASS_USERS ?? 'banm cbtr rtae llrm',
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS_USERS,
     },
   });
 
@@ -86,7 +86,7 @@ export class UsersService {
       console.log(`=========================================\n`);
 
       await this.transporter.sendMail({
-        from: process.env.MAIL_FROM ?? 'harmony.events@gmail.com',
+        from: process.env.MAIL_FROM ?? process.env.MAIL_USER,
         to: normalizedEmail,
         subject: 'Verify your Account',
         text: `Welcome! Your verification code is: ${otp}. It will expire in 15 minutes.`,
@@ -232,7 +232,7 @@ export class UsersService {
       console.log(`=========================================\n`);
 
       await this.transporter.sendMail({
-        from: process.env.MAIL_FROM ?? 'harmony.events@gmail.com',
+        from: process.env.MAIL_FROM ?? process.env.MAIL_USER,
         to: normalizedNewEmail,
         subject: 'Confirm your new email address',
         text: `Your Harmony Events email change verification code is: ${otp}. It will expire in 15 minutes.`,

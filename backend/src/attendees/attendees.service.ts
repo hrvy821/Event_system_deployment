@@ -17,8 +17,8 @@ export class AttendeesService {
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.MAIL_USER ?? 'harmony.events9@gmail.com',
-        pass: process.env.MAIL_PASS_ATTENDEES ?? 'opod ndgn tuuy ogjr',
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS_ATTENDEES,
       },
     });
   }
@@ -93,7 +93,7 @@ export class AttendeesService {
       const qrCodeHtml = this.generateQrCodeHtml(ticketId);
 
       await this.transporter.sendMail({
-        from: '"Harmony Events" <harmony.events9@gmail.com>',
+        from: process.env.MAIL_FROM ?? process.env.MAIL_USER,
         to: savedAttendee.email,
         subject: `Your Ticket Confirmed: ${ticketId}`,
         html: `
