@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
-import { Mail, Lock, User, ShieldCheck, AlertCircle, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, ShieldCheck, AlertCircle, CheckCircle2, XCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import HarmonyLogo from '../../components/HarmonyLogo'; 
 
 export default function Signup() {
@@ -37,6 +37,8 @@ export default function Signup() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const passwordRules = {
     length: formData.password.length >= 8, 
@@ -254,13 +256,21 @@ export default function Signup() {
                     <Lock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    type="password" name="password" required value={formData.password} onChange={handleChange}
+                    type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange}
                     readOnly 
                     onFocus={(e) => e.target.removeAttribute('readonly')} 
                     autoComplete="off"
                     className="block w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-gray-900 font-medium bg-white shadow-sm"
                     placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-700 transition"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
                 </div>
                 
                 <div className="bg-indigo-50/50 border border-indigo-100/50 rounded-xl p-4 mt-3 space-y-2">
@@ -290,7 +300,7 @@ export default function Signup() {
                     <Lock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    type="password" name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange}
+                    type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange}
                     readOnly 
                     onFocus={(e) => e.target.removeAttribute('readonly')} 
                     autoComplete="off"
@@ -301,6 +311,14 @@ export default function Signup() {
                     }`}
                     placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-700 transition"
+                    aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
                 </div>
               </div>
 

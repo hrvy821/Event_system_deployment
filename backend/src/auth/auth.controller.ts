@@ -28,6 +28,17 @@ export class AuthController {
     return this.authService.login(user);
   }
 
+  @Get('google/status')
+  @ApiOperation({ summary: 'Check whether Google OAuth is configured' })
+  @ApiResponse({ status: 200, description: 'Google OAuth status' })
+  googleStatus() {
+    const enabled = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+    return {
+      enabled,
+      callbackUrl: process.env.GOOGLE_CALLBACK_URL ?? null,
+    };
+  }
+
   // ==========================================
   // EXISTING ENDPOINTS FOR FORGOT PASSWORD
   // ==========================================

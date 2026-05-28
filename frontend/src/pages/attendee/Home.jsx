@@ -44,7 +44,7 @@ const formatDateTime = (dateStr, timeStr) => {
   } catch { return `${dateStr} • ${timeStr}`; }
 };
 
-const EventCard = ({ event, featured = false, isGoing, soldCount }) => {
+const EventCard = ({ event, featured = false, registrationStatus, soldCount }) => {
   const capacity = Number(event.capacity) || 0;
   const percentSold = capacity > 0 ? Math.min(100, Math.round((soldCount / capacity) * 100)) : 0;
   const isSoldOut = capacity > 0 && soldCount >= capacity;
@@ -126,9 +126,10 @@ const EventCard = ({ event, featured = false, isGoing, soldCount }) => {
         </div>
 
         <div className="flex justify-between items-center mt-auto pt-2 gap-3">
-          {isGoing ? (
-            <span className="flex items-center gap-1.5 font-extrabold text-sm bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.15)] border border-emerald-100 tracking-wide">
-              <CheckCircle2 size={18} strokeWidth={2.5} /> You're Going!
+          {registrationStatus ? (
+            <span className={`flex items-center gap-1.5 font-extrabold text-sm px-4 py-2 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.15)] border tracking-wide ${registrationStatus === 'Checked In' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
+              <CheckCircle2 size={18} strokeWidth={2.5} />
+              {registrationStatus === 'Checked In' ? 'Checked In' : 'Registered'}
             </span>
           ) : (
             <div className="flex flex-col">
@@ -136,7 +137,7 @@ const EventCard = ({ event, featured = false, isGoing, soldCount }) => {
               <span className="font-black text-2xl text-slate-950 tracking-tight leading-none">{isFree ? 'FREE' : `₱${event.price}`}</span>
             </div>
           )}
-          <Link to={`/event/${event.id}`} className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-black transition-all active:scale-95 shadow-sm ${isGoing ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/30'}`}>
+          <Link to={`/event/${event.id}`} className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-black transition-all active:scale-95 shadow-sm ${registrationStatus ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/30'}`}>
             View Event <ArrowRight size={16} />
           </Link>
         </div>
@@ -148,7 +149,7 @@ const EventCard = ({ event, featured = false, isGoing, soldCount }) => {
 
 export default function Home() {
   const [events, setEvents] = useState([]);
-  const [myRegistrations, setMyRegistrations] = useState([]);
+  const [myTicketStatuses, setMyTicketStatuses] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loading, setLoading] = useState(true);
@@ -169,7 +170,9 @@ export default function Home() {
       if (isLoggedIn && user?.email) {
         const attendeesRes = await api.get('/attendees');
         const myTix = attendeesRes.data.filter((a) => a.email === user.email && a.status !== 'Cancelled');
-        setMyRegistrations(myTix.map((t) => String(t.eventId)));
+        setMyTicketStatuses(
+          Object.fromEntries(myTix.map((t) => [String(t.eventId), t.status || 'Pending'])),
+        );
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -213,7 +216,7 @@ export default function Home() {
     });
   }, [publishedEvents, searchTerm, selectedCategory]);
 
-  const myUpcomingEvents = filteredEvents.filter((event) => myRegistrations.includes(String(event.id)));
+  const myUpcomingEvents = filteredEvents.filter((event) => myTicketStatuses[String(event.id)]);
 
   const trendingEvents = useMemo(() => {
     return [...publishedEvents]
@@ -330,7 +333,7 @@ export default function Home() {
             <div className="flex gap-5 overflow-x-auto pb-2 snap-x snap-mandatory xl:grid xl:grid-cols-3 xl:overflow-visible scrollbar-hide">
               {trendingEvents.map((event) => (
                 <div key={`trending-${event.id}`} className="min-w-[310px] sm:min-w-[360px] xl:min-w-0 snap-start">
-                  <EventCard event={event} featured isGoing={myRegistrations.includes(String(event.id))} soldCount={Number(event.ticketsSold) || 0} />
+                  <EventCard event={event} featured registrationStatus={myTicketStatuses[String(event.id)]} soldCount={Number(event.ticketsSold) || 0} />
                 </div>
               ))}
             </div>
@@ -417,7 +420,7 @@ export default function Home() {
             <div className="flex gap-5 overflow-x-auto pb-2 snap-x snap-mandatory lg:grid lg:grid-cols-3 lg:overflow-visible scrollbar-hide">
               {recommendedEvents.map((event) => (
                 <div key={`recommended-${event.id}`} className="min-w-[310px] sm:min-w-[360px] lg:min-w-0 snap-start">
-                  <EventCard event={event} isGoing={myRegistrations.includes(String(event.id))} soldCount={Number(event.ticketsSold) || 0} />
+                  <EventCard event={event} registrationStatus={myTicketStatuses[String(event.id)]} soldCount={Number(event.ticketsSold) || 0} />
                 </div>
               ))}
             </div>
@@ -446,7 +449,7 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {filteredEvents.map((event) => (
-              <EventCard key={event.id} event={event} isGoing={myRegistrations.includes(String(event.id))} soldCount={Number(event.ticketsSold) || 0} />
+              <EventCard key={event.id} event={event} registrationStatus={myTicketStatuses[String(event.id)]} soldCount={Number(event.ticketsSold) || 0} />
             ))}
 
             {filteredEvents.length === 0 && (

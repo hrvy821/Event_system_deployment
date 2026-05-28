@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, KeyRound, Lock, AlertCircle, ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
+import { Mail, KeyRound, Lock, AlertCircle, ArrowLeft, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
 import { api } from '../../lib/api';
 
 export default function ForgotPassword() {
@@ -13,6 +13,8 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [passwords, setPasswords] = useState({ newPassword: '', confirmPassword: '' });
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Real-time Validation for New Password
   const passwordRules = {
@@ -182,11 +184,18 @@ export default function ForgotPassword() {
               <div className="relative mb-2">
                 <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
                 <input 
-                  required type="password" placeholder="--------" value={passwords.newPassword}
+                  required type={showNewPassword ? 'text' : 'password'} placeholder="--------" value={passwords.newPassword}
                   autoComplete="new-password"
                   className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
                   onChange={(e) => { setPasswords({...passwords, newPassword: e.target.value}); setErrorMessage(''); }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword((v) => !v)}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-700"
+                >
+                  {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
               
               <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 space-y-1.5 mt-1">
@@ -201,11 +210,18 @@ export default function ForgotPassword() {
               <div className="relative">
                 <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
                 <input 
-                  required type="password" placeholder="--------" value={passwords.confirmPassword}
+                  required type={showConfirmPassword ? 'text' : 'password'} placeholder="--------" value={passwords.confirmPassword}
                   autoComplete="new-password"
                   className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
                   onChange={(e) => { setPasswords({...passwords, confirmPassword: e.target.value}); setErrorMessage(''); }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((v) => !v)}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-700"
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
             <button 

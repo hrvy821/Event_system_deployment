@@ -96,7 +96,18 @@ export class AuthService {
       text: `Your OTP for password reset is: ${otp}. It will expire in 15 minutes.`,
     };
 
-    await this.transporter.sendMail(mailOptions);
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error: any) {
+      console.error('Password reset email failed:', error?.message || error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[DEV MODE] PASSWORD RESET OTP FOR ${user.email}: ${otp}`);
+      }
+      return {
+        message: 'OTP generated, but email delivery failed. Please check mail settings.',
+      };
+    }
+
     return { message: 'OTP sent successfully' };
   }
 
@@ -153,7 +164,18 @@ export class AuthService {
       text: `Your account was archived. Your OTP to reactivate and verify your email is: ${otp}. It will expire in 15 minutes.`,
     };
 
-    await this.transporter.sendMail(mailOptions);
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error: any) {
+      console.error('Reactivation email failed:', error?.message || error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[DEV MODE] REACTIVATION OTP FOR ${user.email}: ${otp}`);
+      }
+      return {
+        message: 'OTP generated, but email delivery failed. Please check mail settings.',
+      };
+    }
+
     return { message: 'Reactivation OTP sent successfully' };
   }
 
