@@ -7,7 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
 import * as nodemailer from 'nodemailer';
-import { mailPassword } from '../common/mail-config';
+import { gmailTransport, shouldLogDevOtp } from '../common/mail-config';
 import { queueMail } from '../common/mail-queue';
 
 interface PendingUser {
@@ -29,19 +29,7 @@ interface PendingUser {
 export class UsersService {
   private pendingUsers = new Map<string, PendingUser>();
 
-  private transporter = nodemailer.createTransport({
-    service: 'gmail',
-    pool: true,
-    maxConnections: 1,
-    maxMessages: 25,
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 30000,
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: mailPassword('MAIL_PASS_USERS'),
-    },
-  });
+  private transporter = nodemailer.createTransport(gmailTransport('MAIL_PASS_USERS'));
 
   constructor(
     @InjectModel(User.name)
@@ -88,9 +76,11 @@ export class UsersService {
       expiresAt,
     } as PendingUser);
 
-    console.log(`\n=========================================`);
-    console.log(`[DEV MODE] OTP CODE FOR ${normalizedEmail}: ${otp}`);
-    console.log(`=========================================\n`);
+    if (shouldLogDevOtp()) {
+      console.log(`\n=========================================`);
+      console.log(`[DEV MODE] OTP CODE FOR ${normalizedEmail}: ${otp}`);
+      console.log(`=========================================\n`);
+    }
 
     queueMail(
       this.transporter,
@@ -234,9 +224,11 @@ export class UsersService {
     user.pendingEmailOtpExpires = expiresAt;
     await user.save();
 
-    console.log(`\n=========================================`);
-    console.log(`[DEV MODE] OTP CODE FOR EMAIL CHANGE: ${otp}`);
-    console.log(`=========================================\n`);
+    if (shouldLogDevOtp()) {
+      console.log(`\n=========================================`);
+      console.log(`[DEV MODE] OTP CODE FOR EMAIL CHANGE: ${otp}`);
+      console.log(`=========================================\n`);
+    }
 
     queueMail(
       this.transporter,

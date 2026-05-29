@@ -5,7 +5,7 @@ import { Attendee } from './entities/attendee.entity';
 import { CreateAttendeeDto } from './dto/create-attendee.dto';
 import * as nodemailer from 'nodemailer';
 import * as QRCode from 'qrcode';
-import { mailPassword } from '../common/mail-config';
+import { gmailTransport } from '../common/mail-config';
 import { queueMail } from '../common/mail-queue';
 
 @Injectable()
@@ -16,19 +16,7 @@ export class AttendeesService {
     @InjectModel(Attendee.name)
     private attendeeModel: Model<Attendee>,
   ) {
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      pool: true,
-      maxConnections: 1,
-      maxMessages: 25,
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 30000,
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: mailPassword('MAIL_PASS_ATTENDEES'),
-      },
-    });
+    this.transporter = nodemailer.createTransport(gmailTransport('MAIL_PASS_ATTENDEES'));
   }
 
   private async nextId() {
