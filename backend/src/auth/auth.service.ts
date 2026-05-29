@@ -7,6 +7,7 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import * as nodemailer from 'nodemailer';
+import { mailPassword } from '../common/mail-config';
 import { queueMail } from '../common/mail-queue';
 
 @Injectable()
@@ -21,7 +22,7 @@ export class AuthService {
     socketTimeout: 30000,
     auth: {
       user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS_AUTH,
+      pass: mailPassword('MAIL_PASS_AUTH'),
     },
   });
 

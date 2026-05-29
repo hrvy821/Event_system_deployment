@@ -5,6 +5,7 @@ import { Attendee } from './entities/attendee.entity';
 import { CreateAttendeeDto } from './dto/create-attendee.dto';
 import * as nodemailer from 'nodemailer';
 import * as QRCode from 'qrcode';
+import { mailPassword } from '../common/mail-config';
 import { queueMail } from '../common/mail-queue';
 
 @Injectable()
@@ -25,7 +26,7 @@ export class AttendeesService {
       socketTimeout: 30000,
       auth: {
         user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS_ATTENDEES,
+        pass: mailPassword('MAIL_PASS_ATTENDEES'),
       },
     });
   }
