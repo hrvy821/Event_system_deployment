@@ -96,7 +96,7 @@ export class AuthService {
       console.log(`[DEV MODE] PASSWORD RESET OTP FOR ${user.email}: ${otp}`);
     }
 
-    queueMail(this.transporter, mailOptions, `password reset OTP -> ${user.email}`);
+    await queueMail(this.transporter, mailOptions, `password reset OTP -> ${user.email}`);
     return { message: 'OTP sent successfully' };
   }
 
@@ -157,7 +157,7 @@ export class AuthService {
       console.log(`[DEV MODE] REACTIVATION OTP FOR ${user.email}: ${otp}`);
     }
 
-    queueMail(this.transporter, mailOptions, `reactivation OTP -> ${user.email}`);
+    await queueMail(this.transporter, mailOptions, `reactivation OTP -> ${user.email}`);
     return { message: 'Reactivation OTP sent successfully' };
   }
 

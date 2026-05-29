@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "installCommand": "npm install && npm --prefix frontend install && npm --prefix backend install",
+  "buildCommand": "npm --prefix frontend run build && npm --prefix backend run build",
+  "outputDirectory": "frontend/dist",
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/auth/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/events/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/attendees/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/users/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/notifications/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

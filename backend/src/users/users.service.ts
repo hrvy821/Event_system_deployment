@@ -82,7 +82,7 @@ export class UsersService {
       console.log(`=========================================\n`);
     }
 
-    queueMail(
+    await queueMail(
       this.transporter,
       {
         from: process.env.MAIL_FROM ?? process.env.MAIL_USER,
@@ -230,7 +230,7 @@ export class UsersService {
       console.log(`=========================================\n`);
     }
 
-    queueMail(
+    await queueMail(
       this.transporter,
       {
         from: process.env.MAIL_FROM ?? process.env.MAIL_USER,
