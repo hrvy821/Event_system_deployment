@@ -5,6 +5,7 @@ import { Attendee } from './entities/attendee.entity';
 import { CreateAttendeeDto } from './dto/create-attendee.dto';
 import * as nodemailer from 'nodemailer';
 import * as QRCode from 'qrcode';
+import { queueMail } from '../common/mail-queue';
 
 @Injectable()
 export class AttendeesService {
@@ -16,6 +17,12 @@ export class AttendeesService {
   ) {
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
+      pool: true,
+      maxConnections: 1,
+      maxMessages: 25,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 30000,
       auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASS_ATTENDEES,
@@ -92,27 +99,31 @@ export class AttendeesService {
     try {
       const qrCodeHtml = this.generateQrCodeHtml(ticketId);
 
-      await this.transporter.sendMail({
-        from: process.env.MAIL_FROM ?? process.env.MAIL_USER,
-        to: savedAttendee.email,
-        subject: `Your Ticket Confirmed: ${ticketId}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <div style="background-color: #2563eb; color: white; padding: 20px; text-align: center;">
-              <h1 style="margin: 0; font-size: 24px;">You're Going!</h1>
-              <p style="margin: 5px 0 0 0; opacity: 0.9;">Registration Confirmed</p>
-            </div>
-            <div style="padding: 30px; text-align: center; background-color: #ffffff;">
-              <p style="font-size: 16px; color: #4b5563; margin-bottom: 5px;">Hi <strong>${savedAttendee.name}</strong>,</p>
-              <p style="font-size: 16px; color: #4b5563; margin-bottom: 20px;">Here is your official e-ticket. Present this QR code at the entrance.</p>
-              <div style="background-color: #f3f4f6; padding: 18px; border-radius: 12px; display: inline-block;">
-                ${qrCodeHtml}
-                <p style="margin: 15px 0 0 0; font-family: monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; color: #111827;">${ticketId}</p>
+      queueMail(
+        this.transporter,
+        {
+          from: process.env.MAIL_FROM ?? process.env.MAIL_USER,
+          to: savedAttendee.email,
+          subject: `Your Ticket Confirmed: ${ticketId}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              <div style="background-color: #2563eb; color: white; padding: 20px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">You're Going!</h1>
+                <p style="margin: 5px 0 0 0; opacity: 0.9;">Registration Confirmed</p>
+              </div>
+              <div style="padding: 30px; text-align: center; background-color: #ffffff;">
+                <p style="font-size: 16px; color: #4b5563; margin-bottom: 5px;">Hi <strong>${savedAttendee.name}</strong>,</p>
+                <p style="font-size: 16px; color: #4b5563; margin-bottom: 20px;">Here is your official e-ticket. Present this QR code at the entrance.</p>
+                <div style="background-color: #f3f4f6; padding: 18px; border-radius: 12px; display: inline-block;">
+                  ${qrCodeHtml}
+                  <p style="margin: 15px 0 0 0; font-family: monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; color: #111827;">${ticketId}</p>
+                </div>
               </div>
             </div>
-          </div>
-        `,
-      });
+          `,
+        },
+        `ticket email -> ${savedAttendee.email}`,
+      );
     } catch (error) {
       console.error('Failed to send ticket email:', error);
     }

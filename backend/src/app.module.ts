@@ -16,7 +16,14 @@ dotenv.config({ quiet: true });
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '..', 'frontend', 'dist'),
-      exclude: ['/api*', '/auth*', '/events*', '/attendees*', '/users*', '/notifications*'],
+      exclude: [
+        '/api{/*path}',
+        '/auth{/*path}',
+        '/events{/*path}',
+        '/attendees{/*path}',
+        '/users{/*path}',
+        '/notifications{/*path}',
+      ],
     }),
     ScheduleModule.forRoot(), 
     MongooseModule.forRoot(process.env.MONGODB_URI ?? 'mongodb://localhost:27017/event_db', {

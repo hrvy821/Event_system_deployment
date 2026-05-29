@@ -7,11 +7,18 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import * as nodemailer from 'nodemailer';
+import { queueMail } from '../common/mail-queue';
 
 @Injectable()
 export class AuthService {
   private transporter = nodemailer.createTransport({
     service: 'gmail',
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 25,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 30000,
     auth: {
       user: process.env.MAIL_USER,
       pass: process.env.MAIL_PASS_AUTH,
@@ -96,18 +103,11 @@ export class AuthService {
       text: `Your OTP for password reset is: ${otp}. It will expire in 15 minutes.`,
     };
 
-    try {
-      await this.transporter.sendMail(mailOptions);
-    } catch (error: any) {
-      console.error('Password reset email failed:', error?.message || error);
-      if (process.env.NODE_ENV !== 'production') {
-        console.log(`[DEV MODE] PASSWORD RESET OTP FOR ${user.email}: ${otp}`);
-      }
-      return {
-        message: 'OTP generated, but email delivery failed. Please check mail settings.',
-      };
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[DEV MODE] PASSWORD RESET OTP FOR ${user.email}: ${otp}`);
     }
 
+    queueMail(this.transporter, mailOptions, `password reset OTP -> ${user.email}`);
     return { message: 'OTP sent successfully' };
   }
 
@@ -164,18 +164,11 @@ export class AuthService {
       text: `Your account was archived. Your OTP to reactivate and verify your email is: ${otp}. It will expire in 15 minutes.`,
     };
 
-    try {
-      await this.transporter.sendMail(mailOptions);
-    } catch (error: any) {
-      console.error('Reactivation email failed:', error?.message || error);
-      if (process.env.NODE_ENV !== 'production') {
-        console.log(`[DEV MODE] REACTIVATION OTP FOR ${user.email}: ${otp}`);
-      }
-      return {
-        message: 'OTP generated, but email delivery failed. Please check mail settings.',
-      };
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[DEV MODE] REACTIVATION OTP FOR ${user.email}: ${otp}`);
     }
 
+    queueMail(this.transporter, mailOptions, `reactivation OTP -> ${user.email}`);
     return { message: 'Reactivation OTP sent successfully' };
   }
 

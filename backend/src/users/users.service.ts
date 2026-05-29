@@ -7,6 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
 import * as nodemailer from 'nodemailer';
+import { queueMail } from '../common/mail-queue';
 
 interface PendingUser {
   name: string;
@@ -29,6 +30,12 @@ export class UsersService {
 
   private transporter = nodemailer.createTransport({
     service: 'gmail',
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 25,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 30000,
     auth: {
       user: process.env.MAIL_USER,
       pass: process.env.MAIL_PASS_USERS,
@@ -80,20 +87,20 @@ export class UsersService {
       expiresAt,
     } as PendingUser);
 
-    try {
-      console.log(`\n=========================================`);
-      console.log(`[DEV MODE] OTP CODE FOR ${normalizedEmail}: ${otp}`);
-      console.log(`=========================================\n`);
+    console.log(`\n=========================================`);
+    console.log(`[DEV MODE] OTP CODE FOR ${normalizedEmail}: ${otp}`);
+    console.log(`=========================================\n`);
 
-      await this.transporter.sendMail({
+    queueMail(
+      this.transporter,
+      {
         from: process.env.MAIL_FROM ?? process.env.MAIL_USER,
         to: normalizedEmail,
         subject: 'Verify your Account',
         text: `Welcome! Your verification code is: ${otp}. It will expire in 15 minutes.`,
-      });
-    } catch (error: any) {
-      console.error('Nodemailer Error (Safe Fallback Active):', error.message);
-    }
+      },
+      `signup OTP -> ${normalizedEmail}`,
+    );
 
     return { message: 'OTP sent. Please verify your email.' };
   }
@@ -226,20 +233,20 @@ export class UsersService {
     user.pendingEmailOtpExpires = expiresAt;
     await user.save();
 
-    try {
-      console.log(`\n=========================================`);
-      console.log(`[DEV MODE] OTP CODE FOR EMAIL CHANGE: ${otp}`);
-      console.log(`=========================================\n`);
+    console.log(`\n=========================================`);
+    console.log(`[DEV MODE] OTP CODE FOR EMAIL CHANGE: ${otp}`);
+    console.log(`=========================================\n`);
 
-      await this.transporter.sendMail({
+    queueMail(
+      this.transporter,
+      {
         from: process.env.MAIL_FROM ?? process.env.MAIL_USER,
         to: normalizedNewEmail,
         subject: 'Confirm your new email address',
         text: `Your Harmony Events email change verification code is: ${otp}. It will expire in 15 minutes.`,
-      });
-    } catch (error: any) {
-      console.error('Nodemailer Error:', error.message);
-    }
+      },
+      `email change OTP -> ${normalizedNewEmail}`,
+    );
 
     return { message: 'Verification code sent successfully to your new email address.' };
   }
