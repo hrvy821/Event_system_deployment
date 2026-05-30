@@ -28,6 +28,10 @@ dotenv.config({ quiet: true });
     ScheduleModule.forRoot(), 
     MongooseModule.forRoot(process.env.MONGODB_URI ?? 'mongodb://localhost:27017/event_db', {
       dbName: process.env.MONGODB_DB ?? 'event_db',
+      retryAttempts: 1,
+      retryDelay: 500,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
     }),
     EventsModule,
     AttendeesModule,
